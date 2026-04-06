@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prezento - 상품 연결 중</title>
+    <style>
+        /* 모바일 퍼스트 심플 디자인 */
+        body { margin: 0; padding: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: -apple-system, sans-serif; background-color: #fff; }
+        .loader { width: 48px; height: 48px; border: 5px solid #eee; border-bottom-color: #ff3333; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .msg { margin-top: 20px; font-size: 16px; font-weight: bold; color: #333; }
+        .sub-msg { margin-top: 8px; font-size: 13px; color: #888; }
+        .footer { position: absolute; bottom: 30px; font-size: 11px; color: #bbb; text-align: center; width: 90%; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+    <span class="loader"></span>
+    <div class="msg">쿠팡 앱으로 연결하고 있습니다.</div>
+    <div class="sub-msg">잠시만 기다려 주세요...</div>
+
+    <div class="footer">
+        본 페이지는 쿠팡 파트너스 활동의 일환으로,<br>
+        이에 따른 일정액의 수수료를 제공받을 수 있습니다.
+    </div>
+
+    <script>
+        // URL에서 ?id= 뒤의 값을 가져옴
+        const params = new URLSearchParams(window.location.search);
+        const itemId = params.get('id');
+
+        if (itemId) {
+            const coupangUrl = "https://link.coupang.com/a/" + itemId;
+            
+            // 0.6초 뒤에 쿠팡 앱으로 자동 이동 (봇 회피 딜레이)
+            setTimeout(() => {
+                window.location.replace(coupangUrl);
+            }, 600);
+        } else {
+            document.querySelector('.msg').innerText = "상품 정보가 없습니다.";
+            document.querySelector('.loader').style.display = "none";
+        }
+    </script>
+</body>
+</html>
