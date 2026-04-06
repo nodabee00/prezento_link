@@ -3,55 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presento - 상품 연결 중</title>
+    <title>쿠팡 로켓배송 확인</title>
     <style>
-        /* 모바일 퍼스트 심플 디자인 */
-        body { margin: 0; padding: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: -apple-system, sans-serif; background-color: #fff; text-align: center;}
-        .loader { width: 48px; height: 48px; border: 5px solid #eee; border-bottom-color: #ff3333; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
+        body { margin: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: -apple-system, sans-serif; background-color: #f8f9fa; text-align: center; }
+        .loader { width: 48px; height: 48px; border: 5px solid #eee; border-bottom-color: #cb1400; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .msg { margin-top: 20px; font-size: 16px; font-weight: bold; color: #333; }
-        .sub-msg { margin-top: 8px; font-size: 13px; color: #888; margin-bottom: 20px;}
         
-        /* 🔥 핀터레스트 인앱 탈출용 수동 버튼 디자인 */
-        .manual-btn { display: inline-block; padding: 12px 24px; background-color: #cb1400; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
-        
-        .footer { position: absolute; bottom: 30px; font-size: 11px; color: #bbb; text-align: center; width: 90%; line-height: 1.5; }
+        /* 아이폰용 안내 UI (평소엔 숨김) */
+        #ios-guide { display: none; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 80%; border: 2px solid #333; }
+        .ios-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; }
+        .copy-btn { background: #007AFF; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; width: 100%; margin-bottom: 15px; font-size: 15px; }
     </style>
 </head>
 <body>
 
-    <span class="loader"></span>
-    <div class="msg">쿠팡 앱으로 연결하고 있습니다.</div>
-    <div class="sub-msg">화면이 넘어가지 않으면 아래 버튼을 눌러주세요.</div>
+    <div id="loader-view">
+        <span class="loader"></span>
+        <div style="margin-top: 20px; font-weight: bold;">앱으로 연결 중입니다...</div>
+    </div>
 
-    <a href="#" class="manual-btn" id="manualBtn" target="_blank" style="display: none;">앱에서 최저가 확인하기</a>
-
-    <div class="footer">
-        본 페이지는 쿠팡 파트너스 활동의 일환으로,<br>
-        이에 따른 일정액의 수수료를 제공받을 수 있습니다.
+    <div id="ios-guide">
+        <div class="ios-title">🍎 아이폰 연결 안내</div>
+        <div style="font-size: 14px; color: #555; margin-bottom: 20px; line-height: 1.5;">
+            현재 화면에서는 쿠팡 앱이 열리지 않습니다.<br>
+            아래 버튼을 눌러 링크를 복사한 뒤,<br><b>Safari</b> 주소창에 붙여넣어 주세요!
+        </div>
+        <button class="copy-btn" id="copyBtn">🔗 링크 복사하기</button>
     </div>
 
     <script>
         const params = new URLSearchParams(window.location.search);
         const itemId = params.get('id');
+        const coupangUrl = itemId ? "https://link.coupang.com/a/" + itemId : null;
 
-        if (itemId) {
-            const coupangUrl = "https://link.coupang.com/a/" + itemId;
-            
-            // 버튼에 쿠팡 링크를 심어주고 화면에 보이게 짠!
-            const btn = document.getElementById('manualBtn');
-            btn.href = coupangUrl;
-            btn.style.display = "inline-block";
-            
-            // 0.6초 뒤에 쿠팡 앱으로 자동 이동 (PC나 일반 사파리/크롬용)
-            setTimeout(() => {
-                window.location.replace(coupangUrl);
-            }, 600);
-        } else {
-            document.querySelector('.msg').innerText = "상품 정보가 없습니다.";
-            document.querySelector('.sub-msg').innerText = "올바른 링크로 접속해 주세요.";
-            document.querySelector('.loader').style.display = "none";
+        if (coupangUrl) {
+            const ua = navigator.userAgent.toLowerCase();
+            const isAndroid = /android/i.test(ua);
+            const isIOS = /iphone|ipad|ipod/i.test(ua);
+            const isInAppBrowser = /pinterest|kakaotalk|kakaostory|instagram|facebook|line|band/i.test(ua);
+
+            if (isInAppBrowser) {
+                if (isAndroid) {
+                    // 🔥 핵심기술: 안드로이드는 크롬 브라우저를 강제 호출하여 탈출!
+                    const intentUrl = 'intent://' + coupangUrl.replace(/https?:\/\//i, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+                    location.href = intentUrl;
+                } else if (isIOS) {
+                    // 🍎 아이폰: 강제 호출이 막혀있으므로 복사 UI 띄우기
+                    document.getElementById('loader-view').style.display = 'none';
+                    document.getElementById('ios-guide').style.display = 'block';
+                    
+                    document.getElementById('copyBtn').addEventListener('click', function() {
+                        navigator.clipboard.writeText(coupangUrl).then(() => {
+                            alert("✅ 링크가 복사되었습니다! Safari 주소창에 붙여넣어주세요.");
+                        });
+                    });
+                }
+            } else {
+                // 일반 사파리/크롬 접속 시 자동 이동
+                setTimeout(() => {
+                    location.replace(coupangUrl);
+                }, 500);
+            }
         }
     </script>
+    <div style="position: absolute; bottom: 20px; font-size: 11px; color: #bbb;">본 페이지는 쿠팡 파트너스 활동의 일환으로 일정액의 수수료를 제공받습니다.</div>
 </body>
 </html>
