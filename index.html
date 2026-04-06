@@ -3,32 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>쿠팡 로켓배송 확인</title>
+    <title>쿠팡 로켓배송 최저가 확인</title>
     <style>
         body { margin: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: -apple-system, sans-serif; background-color: #f8f9fa; text-align: center; }
+        
         .loader { width: 48px; height: 48px; border: 5px solid #eee; border-bottom-color: #cb1400; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* 아이폰용 안내 UI (평소엔 숨김) */
-        #ios-guide { display: none; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 80%; border: 2px solid #333; }
-        .ios-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; }
-        .copy-btn { background: #007AFF; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; width: 100%; margin-bottom: 15px; font-size: 15px; }
+        .footer { position: absolute; bottom: 30px; font-size: 11px; color: #bbb; line-height: 1.5; }
     </style>
 </head>
 <body>
 
     <div id="loader-view">
         <span class="loader"></span>
-        <div style="margin-top: 20px; font-weight: bold;">앱으로 연결 중입니다...</div>
+        <div style="margin-top: 20px; font-weight: bold; color: #333;">쿠팡 앱으로 연결 중입니다...</div>
+        <div style="margin-top: 8px; font-size: 13px; color: #888;">잠시만 기다려주세요.</div>
     </div>
 
-    <div id="ios-guide">
-        <div class="ios-title">🍎 아이폰 연결 안내</div>
-        <div style="font-size: 14px; color: #555; margin-bottom: 20px; line-height: 1.5;">
-            현재 화면에서는 쿠팡 앱이 열리지 않습니다.<br>
-            아래 버튼을 눌러 링크를 복사한 뒤,<br><b>Safari</b> 주소창에 붙여넣어 주세요!
-        </div>
-        <button class="copy-btn" id="copyBtn">🔗 링크 복사하기</button>
+    <div class="footer">
+        본 페이지는 쿠팡 파트너스 활동의 일환으로,<br>이에 따른 일정액의 수수료를 제공받을 수 있습니다.
     </div>
 
     <script>
@@ -42,30 +36,29 @@
             const isIOS = /iphone|ipad|ipod/i.test(ua);
             const isInAppBrowser = /pinterest|kakaotalk|kakaostory|instagram|facebook|line|band/i.test(ua);
 
-            if (isInAppBrowser) {
-                if (isAndroid) {
-                    // 🔥 핵심기술: 안드로이드는 크롬 브라우저를 강제 호출하여 탈출!
+            setTimeout(() => {
+                if (isAndroid && isInAppBrowser) {
+                    // 1. 안드로이드: 크롬 브라우저를 통한 인텐트(Intent) 강제 호출 탈출
                     const intentUrl = 'intent://' + coupangUrl.replace(/https?:\/\//i, '') + '#Intent;scheme=https;package=com.android.chrome;end';
                     location.href = intentUrl;
-                } else if (isIOS) {
-                    // 🍎 아이폰: 강제 호출이 막혀있으므로 복사 UI 띄우기
-                    document.getElementById('loader-view').style.display = 'none';
-                    document.getElementById('ios-guide').style.display = 'block';
                     
-                    document.getElementById('copyBtn').addEventListener('click', function() {
-                        navigator.clipboard.writeText(coupangUrl).then(() => {
-                            alert("✅ 링크가 복사되었습니다! Safari 주소창에 붙여넣어주세요.");
-                        });
-                    });
-                }
-            } else {
-                // 일반 사파리/크롬 접속 시 자동 이동
-                setTimeout(() => {
+                } else if (isIOS && isInAppBrowser) {
+                    // 2. 아이폰(iOS): 인포크링크 방식 (target="_top" 가상 클릭 딥링크 발동)
+                    const a = document.createElement('a');
+                    a.href = coupangUrl;
+                    a.target = '_top'; // 인앱 브라우저 프레임을 무시하고 최상단 이동 명령
+                    document.body.appendChild(a);
+                    a.click(); // 스크립트가 사람 대신 즉시 클릭
+                    
+                } else {
+                    // 3. 일반 사파리/크롬/PC 접속 시 자연스러운 이동
                     location.replace(coupangUrl);
-                }, 500);
-            }
+                }
+            }, 400); // 핀터레스트 봇 회피용 0.4초 딜레이
+            
+        } else {
+            document.getElementById('loader-view').innerHTML = "<b>올바른 상품 링크가 아닙니다.</b>";
         }
     </script>
-    <div style="position: absolute; bottom: 20px; font-size: 11px; color: #bbb;">본 페이지는 쿠팡 파트너스 활동의 일환으로 일정액의 수수료를 제공받습니다.</div>
 </body>
 </html>
