@@ -3,14 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prezento - 상품 연결 중</title>
+    <title>Presento - 상품 연결 중</title>
     <style>
         /* 모바일 퍼스트 심플 디자인 */
-        body { margin: 0; padding: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: -apple-system, sans-serif; background-color: #fff; }
+        body { margin: 0; padding: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; font-family: -apple-system, sans-serif; background-color: #fff; text-align: center;}
         .loader { width: 48px; height: 48px; border: 5px solid #eee; border-bottom-color: #ff3333; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .msg { margin-top: 20px; font-size: 16px; font-weight: bold; color: #333; }
-        .sub-msg { margin-top: 8px; font-size: 13px; color: #888; }
+        .sub-msg { margin-top: 8px; font-size: 13px; color: #888; margin-bottom: 20px;}
+        
+        /* 🔥 핀터레스트 인앱 탈출용 수동 버튼 디자인 */
+        .manual-btn { display: inline-block; padding: 12px 24px; background-color: #cb1400; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
+        
         .footer { position: absolute; bottom: 30px; font-size: 11px; color: #bbb; text-align: center; width: 90%; line-height: 1.5; }
     </style>
 </head>
@@ -18,7 +22,9 @@
 
     <span class="loader"></span>
     <div class="msg">쿠팡 앱으로 연결하고 있습니다.</div>
-    <div class="sub-msg">잠시만 기다려 주세요...</div>
+    <div class="sub-msg">화면이 넘어가지 않으면 아래 버튼을 눌러주세요.</div>
+
+    <a href="#" class="manual-btn" id="manualBtn" target="_blank" style="display: none;">앱에서 최저가 확인하기</a>
 
     <div class="footer">
         본 페이지는 쿠팡 파트너스 활동의 일환으로,<br>
@@ -26,19 +32,24 @@
     </div>
 
     <script>
-        // URL에서 ?id= 뒤의 값을 가져옴
         const params = new URLSearchParams(window.location.search);
         const itemId = params.get('id');
 
         if (itemId) {
             const coupangUrl = "https://link.coupang.com/a/" + itemId;
             
-            // 0.6초 뒤에 쿠팡 앱으로 자동 이동 (봇 회피 딜레이)
+            // 버튼에 쿠팡 링크를 심어주고 화면에 보이게 짠!
+            const btn = document.getElementById('manualBtn');
+            btn.href = coupangUrl;
+            btn.style.display = "inline-block";
+            
+            // 0.6초 뒤에 쿠팡 앱으로 자동 이동 (PC나 일반 사파리/크롬용)
             setTimeout(() => {
                 window.location.replace(coupangUrl);
             }, 600);
         } else {
             document.querySelector('.msg').innerText = "상품 정보가 없습니다.";
+            document.querySelector('.sub-msg').innerText = "올바른 링크로 접속해 주세요.";
             document.querySelector('.loader').style.display = "none";
         }
     </script>
